@@ -461,8 +461,65 @@ WHEN NOT MATCHED THEN
 ;
 ---------------------------------------------------------------------------------------------------
 -- Practice Activity 17
-
 CREATE TABLE ptbl_subcategory_new
 (
-	
-)
+	product_subcategory_id NUMBER(2,0)
+	,product_category_id NUMBER(1,0)
+	,sub_category_name VARCHAR2(30 BYTE)
+);
+INSERT INTO ptbl_subcategory_new VALUES (24, 3, 'Tights (long)');
+INSERT INTO ptbl_subcategory_new VALUES (38, 4, 'Water bottles');
+COMMIT;
+-- Create a MERGE statement that uses this new table to merge with ptbl_subcategory
+-- Where the new product_subcategory_id matches an existing row, UPDATE the other fields in table ptbl_subcategory
+-- Where the new product_subcategory_id does not match, then INSERT this new data
+MERGE INTO ptbl_subcategory t
+USING ptbl_subcategory_new s
+ON (t.product_subcategory_id = s.product_subcategory_id)
+WHEN MATCHED THEN
+	UPDATE SET product_category_id = s.product_category_id
+		,sub_category_name = s.sub_category_name
+WHEN NOT MATCHED THEN
+	INSERT (product_subcategory_id, product_category_id, sub_category_name)
+	VALUES (s.product_subcategory_id, s.product_category_id, s.sub_category_name)
+;
+---------------------------------------------------------------------------------------------------
+-- OVER()
+-- Creating an attendance table
+
+CREATE OR REPLACE TABLE tbl_attendance
+(
+	employee_number NUMBER(4,0)
+	,attendance_month TIMESTAMP
+	,number_of_attendance NUMBER(4,0)
+	,CONSTRAINT pk_attendance PRIMARY KEY(employee_number, attendance_month)
+	,CONSTRAINT fk_tbl_attendance_employee_number FOREIGN KEY (employee_number)
+		REFERENCES tbl_employee(employee_number)
+);
+
+INSERT INTO tbl_attendance (employee_number, attendance_month, number_attendance)
+	VALUES (199, TO_DATE('2025-06-17', 'YYYY-MM-DD'), 28);
+COMMIT;
+
+-- We want to sum all of the attendance days that a particular employee had per year
+SELECT employee_number
+ 	   ,EXTRACT(YEAR FROM attendance_month) AS attendance_year
+	   ,SUM(number_attendance) AS total_attendance
+FROM tbl_attendance
+GROUP BY employee_number, EXTRACT(YEAR FROM attendance_month)
+ORDER BY employee_number, EXTRACT(YEAR FROM attendance_month)
+; -- Entry examples for employee 123:
+-- EMPLOYEE_NUMBER |  ATTENDANCE_YEAR  | TOTAL_ATTENDANCE
+--      123 	   |      2023		   |        174
+--      123 	   |      2024		   |        202
+
+-- Let us explore another type of aggregation or sum:
+SELECT employee_number
+	,attendance_month
+	,number_attendance
+	,SUM(number_attendance) OVER() AS all_employees_total_attendance
+	,ROUND(number_attendance / (SUM(number_attendance) OVER()) * 100, 4) AS percentage_attendance
+FROM tbl_attendance
+;
+-- OVER() takes a particular range of rows and performs a calculation OVER this range.
+-- At the moment, this calculation is performed OVER all the tbl_attendance, but we will refine this on the next lecture:
