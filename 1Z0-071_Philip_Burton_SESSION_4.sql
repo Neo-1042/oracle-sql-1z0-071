@@ -523,3 +523,36 @@ FROM tbl_attendance
 ;
 -- OVER() takes a particular range of rows and performs a calculation OVER this range.
 -- At the moment, this calculation is performed OVER all the tbl_attendance, but we will refine this on the next lecture:
+-- PARTITION BY and ORDER BY
+-- PARTITION BY refines the range that OVER() is working on
+-- OVER(PARTITION BY xxxx ORDER BY xxxxx)
+SELECT employee_number
+	,attendance_month
+	,number_attendance
+	,SUM(number_attendance) OVER(PARTITION BY employee_number ORDER BY attendance_month ASC) AS running_total
+	,ROUND(number_attendance / (SUM(number_attendance) 
+		OVER(PARTITION BY employee_number ORDER BY attendance_month DESC)) * 100, 4) AS percentage_attendance
+FROM tbl_attendance
+;
+-- Add another PARTITION BY field: EXTRACT(YEAR FROM attendance_month)
+SELECT employee_number
+	,attendance_month
+	,number_attendance
+	,SUM(number_attendance) OVER(PARTITION BY employee_number
+								,EXTRACT(YEAR FROM attendance_month)
+								ORDER BY attendance_month ASC) AS running_total
+	--,ROUND(number_attendance / (SUM(number_attendance) 
+	--	OVER(PARTITION BY employee_number ORDER BY attendance_month DESC)) * 100, 4) AS percentage_attendance
+FROM tbl_attendance
+;
+-- ROWS BETWEEN
+SELECT
+	SUM(number_attendance)
+	OVER (
+		PARTITION BY employee_number, EXTRACT(YEAR FROM attendance_month)
+		ORDER BY attendance_month ASC
+		ROWS BETWEEN 1 PRECEDING AND 1 FOLLOWING
+	) AS my_total
+FROM tbl_attendance
+;
+
