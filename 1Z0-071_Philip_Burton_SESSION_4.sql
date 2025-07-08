@@ -525,7 +525,7 @@ FROM tbl_attendance
 -- At the moment, this calculation is performed OVER all the tbl_attendance, but we will refine this on the next lecture:
 -- PARTITION BY and ORDER BY
 -- PARTITION BY refines the range that OVER() is working on
--- OVER(PARTITION BY xxxx ORDER BY xxxxx)
+-- OVER(PARTITION BY xxxx ORDER BY xxxxx ROWS xxxxx)
 SELECT employee_number
 	,attendance_month
 	,number_attendance
@@ -556,3 +556,80 @@ SELECT
 FROM tbl_attendance
 ;
 
+SELECT
+	employee_number, attendance_month, number_attendance
+	,SUM(number_attendance) OVER (
+		PARTITION BY employee_number, EXTRACT(YEAR FROM attendance_month)
+		ORDER BY attendance_month
+		ROWS BETWEEN 1 PRECEDING AND 0 FOLLOWING
+	) AS my_total
+FROM tbl_attendance
+ORDER BY employee_number, attendance_month
+;
+-- UNBOUNDED, PRECEDING, FOLLOWING
+SELECT
+	employee_number, attendance_month, number_attendance
+	,SUM(number_attendance) OVER (
+		PARTITION BY employee_number, EXTRACT(YEAR FROM attendance_month)
+		ORDER BY attendance_month
+		-- ROWS BETWEEN 9999 PRECEDING AND 9999 FOLLOWING
+		ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+	) AS my_total
+FROM tbl_attendance
+ORDER BY employee_number, attendance_month
+;
+-- CURRENT ROW + UNBOUNDED [FOLLOWING/PRECEDING]
+SELECT employee_number, attendance_month, number_attendance
+	,SUM(number_attendance) OVER (
+		PARTITION BY employee_number, EXTRACT(YEAR FROM attendance_month)
+		ORDER BY attendance_month
+		ROWS BETWEEN CURRENT ROW AND UNBOUNDED FOLLOWING
+		-- ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+	) AS my_total
+FROM tbl_attendance
+ORDER BY employee_number, attendance_month
+;
+-- Using RANGE instead of ROWS:
+SELECT employee_number, attendance_month, number_attendance
+	,SUM(number_attendance) OVER (
+		PARTITION BY employee_number, EXTRACT(YEAR FROM attendance_month)
+		ORDER BY attendance_month
+		ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+	) AS rows_total
+	------------------------------------------------------------------------
+	,SUM(number_attendance) OVER (
+		PARTITION BY employee_number, EXTRACT(YEAR FROM attendance_month)
+		ORDER BY attendance_month
+		RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+	) AS
+FROM tbl_attendance
+ORDER BY employee_number, attendance_month
+; -- Same result, for now.
+
+-- DERIVED TABLE = Subquery
+-- Using RANGE instead of ROWS:
+SELECT employee_number, attendance_month, number_attendance
+	,SUM(number_attendance) OVER (
+		PARTITION BY employee_number, EXTRACT(YEAR FROM attendance_month)
+		ORDER BY attendance_month
+		ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+	) AS rows_total
+	------------------------------------------------------------------------
+	,SUM(number_attendance) OVER (
+		PARTITION BY employee_number, EXTRACT(YEAR FROM attendance_month)
+		ORDER BY attendance_month
+		RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW -- RANGE includes the next
+		-- record, which is duplicated, so they have the same RANGE
+		-- You cannot use 1 PRECEDING with RANGE
+	) AS range_total
+FROM (SELECT * FROM tbl_attendance
+		UNION ALL -- duplicating the data
+	SELECT * FROM tbl_attendance
+)
+ORDER BY employee_number, attendance_month
+;
+
+-- RANGE has only 3 possibilities:
+-- 1] UNBOUNDED PRECEDING AND CURRENT ROW
+-- 2] CURRENT ROW AND UNBOUNDED FOLLOWING
+-- 3] UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING (even if it does not make sense)
