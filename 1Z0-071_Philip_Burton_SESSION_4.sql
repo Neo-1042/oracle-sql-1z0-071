@@ -630,6 +630,50 @@ ORDER BY employee_number, attendance_month
 ;
 
 -- RANGE has only 3 possibilities:
--- 1] UNBOUNDED PRECEDING AND CURRENT ROW
--- 2] CURRENT ROW AND UNBOUNDED FOLLOWING
+-- 1] RANGE UNBOUNDED PRECEDING AND CURRENT ROW = RANGE UNBOUNDED PRECEDING
+-- 2] RANGE CURRENT ROW AND UNBOUNDED FOLLOWING = RANGE UNBOUNDED FOLLOWING
 -- 3] UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING (even if it does not make sense)
+
+-- RANGE is slower than ROWS!!!
+-- RANGE should ONLY be used when you want to go to the end of the preceding partition,
+-- or all the way to unbounded following AND you want take care of TIES.
+
+-- Every other time, ROWS is recommended.
+
+-- *** Omitting RANGE/ROW
+SUM(number_attendance) OVER() -- what are the default values?
+-- PARTITION BY the entirety SELECT statement
+-- ORDER BY => You need an ORDER BY before using RANGE/ROWS
+-- RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING (slower)
+
+-- In real life, it's better to use the ROWS inside the OVER:
+SELECT
+	employee_number, attendance_month, number_attendance
+	,SUM(number_attendance) OVER (
+		ORDER BY employee_number
+		ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING
+	) AS total_attendance
+FROM tbl_attendance
+;
+-- Instead of SUM(), you could have COUNT(), MIN(), MAX(), AVG()
+
+-- Practice Activity 18
+-- Add an extra column which shows the total of the actual_cost to date
+-- Then, add another extra column which shows the total month-to-date actual_cost
+-- (so that, when a new month starts, it resets)
+SELECT Transaction_Date, Actual_Cost
+	,SUM(actual_cost) OVER (
+		PARTITION BY Transaction_Date
+		ORDER BY Transaction_Date ASC
+		ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+	) AS total_cost_to_date
+	,SUM(actual_cost) OVER (
+		PARTITION BY EXTRACT(MONTH FROM Transaction_Date)
+		ORDER BY 
+	)
+FROM PTBL_TRANSACTION
+ORDER BY Transaction_Date;
+-- Make sure that the total resets at the start of each month, e.g.
+-- August 2013 should be partitioned from September 2013, which should be partitioned
+-- from September 2014.
+-- Revision:
