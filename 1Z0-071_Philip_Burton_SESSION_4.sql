@@ -660,20 +660,48 @@ FROM tbl_attendance
 -- Practice Activity 18
 -- Add an extra column which shows the total of the actual_cost to date
 -- Then, add another extra column which shows the total month-to-date actual_cost
--- (so that, when a new month starts, it resets)
+-- (so that, when a new month starts, it resets) This is where you add the PARTITION BY clause
 SELECT Transaction_Date, Actual_Cost
 	,SUM(actual_cost) OVER (
-		PARTITION BY Transaction_Date
-		ORDER BY Transaction_Date ASC
+		-- PARTITION (empty)
+		ORDER BY Transaction_Date ASC -- earliest dates first
 		ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
 	) AS total_cost_to_date
 	,SUM(actual_cost) OVER (
-		PARTITION BY EXTRACT(MONTH FROM Transaction_Date)
-		ORDER BY 
-	)
+		PARTITION BY TO_CHAR(Transaction_Date, 'YYMM') -- 1301, 1302, 1303, ... , 1312
+		ORDER BY Transaction_Date ASC
+		ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING -- Gives me the entirety of the YEAR-MONTH
+	) AS actual_cost_month_to_date
 FROM PTBL_TRANSACTION
 ORDER BY Transaction_Date;
 -- Make sure that the total resets at the start of each month, e.g.
 -- August 2013 should be partitioned from September 2013, which should be partitioned
 -- from September 2014.
--- Revision:
+
+-- On session 5 we will add 'WITH' to the OVER() clause :O
+
+---------------------------------------------------------------------------------------------------
+-- *** ANALYTICAL FUNCTIONS *** --
+-- ROW_NUMBER, RANK, DENSE_RANK, NTILE, FIRST_VALUE, LAST_VALUE, LAG and LEAD, CUME_DIST,
+-- PERCENT_RANK, PERCENTILE_CONT, PERCENTILE_DISC, and more.
+---------------------------------------------------------------------------------------------------
+
+-- ROW_NUMBER (different from 'rownum'), RANK and DENSE_RANK
+SELECT 
+	employee_number, attendance_month, number_attendance
+	,rownum -- This is a pseudocolumn. Has a couple of drawbacks
+	,ROW_NUMBER() OVER (
+		ORDER BY employee_number, attendance_month
+	) AS the_row_number -- this is an exact duplicate of rownum
+FROM tbl_attendance
+;
+
+SELECT 
+	employee_number, attendance_month, number_attendance
+	,rownum -- This is a pseudocolumn. Has a couple of drawbacks
+	,ROW_NUMBER() OVER (
+		PARTITION BY employee_number
+		ORDER BY attendance_month
+	) AS the_row_number -- the row number is reset after a NEW employee_number appears
+FROM tbl_attendance
+;
