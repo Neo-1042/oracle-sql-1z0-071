@@ -16,7 +16,7 @@ SELECT d.department, t.employee_number, t.date_of_transaction, t.amount AS total
 FROM tbl_department d
 	LEFT JOIN tbl_employee e    ON d.department = e.department
 	LEFT JOIN tbl_transaction t ON e.employee_number = t.employee_number
-WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that 
+WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that
 -- he can change it at will
 ORDER BY d.department, t.employee_number
 ;
@@ -40,7 +40,7 @@ CREATE VIEW vw_department1 AS (
 	FROM tbl_department d
 		LEFT JOIN tbl_employee e    ON d.department = e.department
 		LEFT JOIN tbl_transaction t ON e.employee_number = t.employee_number
-	WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that 
+	WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that
 	-- he can change it at will
 	ORDER BY d.department, t.employee_number -- Oracle SQL allows ORDER BY within views
 );
@@ -67,13 +67,13 @@ CREATE OR REPLACE VIEW vw_department1 AS (
 	FROM tbl_department d
 		LEFT JOIN tbl_employee e    ON d.department = e.department
 		LEFT JOIN tbl_transaction t ON e.employee_number = t.employee_number
-	WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that 
+	WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that
 	-- he can change it at will
 	ORDER BY d.department, t.employee_number -- Oracle SQL allows ORDER BY within views
 );
 ---------------------------------------------------------------------------------------------------
 -- DML on VIEWs
--- INSERT INTO vw ... 
+-- INSERT INTO vw ...
 -- Error: Cannot modify a column which maps to a non key-preserved table
 -- Action: Modify the underlying base tables directly
 -- Alternative solution: analyze and fix the PK/FK constraints on the underlying tables
@@ -94,7 +94,7 @@ CREATE OR REPLACE VIEW vw_by_department AS
 	FROM tbl_department d
 		LEFT JOIN tbl_employee e    ON d.department = e.department
 		LEFT JOIN tbl_transaction t ON e.employee_number = t.employee_number
-	WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that 
+	WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that
 	-- he can change it at will
 	ORDER BY d.department, t.employee_number
 WITH READ ONLY
@@ -160,8 +160,8 @@ CREATE OR REPLACE VIEW vw_by_category AS (
 ;
 
 -- 3] Change the view so that the total_actual_cost is INVISIBLE
-CREATE OR REPLACE VIEW vw_by_category 
-		(category_name, subcategory_name, total_quantity, total_actual_cost INVISIBLE ) 
+CREATE OR REPLACE VIEW vw_by_category
+		(category_name, subcategory_name, total_quantity, total_actual_cost INVISIBLE )
 AS (
 	SELECT category_name, subcategory_name, SUM(quantity) AS total_quantity
 			,SUM(actual_cost) AS total_actual_cost
@@ -211,7 +211,7 @@ SELECT CAST(TO_DATE('2022-01-01', 'YYYY-MM-DD') AS TIMESTAMP) as my_timestamp
 FROM DUAL
 ; -- TIMESTAMP(9) OK
 ---------------------------------------------------------------------------------------------------
--- INTERSECT and MINUS operations	
+-- INTERSECT and MINUS operations
 
 CREATE OR REPLACE TABLE tbl_transaction_new
 (
@@ -240,7 +240,7 @@ DELETE
 FROM tbl_transaction_new
 WHERE should_i_delete = 1;
 
-SELECT COUNT(*) 
+SELECT COUNT(*)
 FROM tbl_transaction_new
 ;
 
@@ -268,7 +268,7 @@ FROM tbl_employee
 ORDER BY &how_do_you_want_me_to_order_by -- Enter value for the variable :O
 ;
 
-SELECT * 
+SELECT *
 FROM tbl_employee
 ORDER BY &x -- Prompts a popup for the value for variable substitution
 ;
@@ -290,7 +290,7 @@ ORDER BY &column_name
 ;
 ---------------------------------------------------------------------------------------------------
 -- CASE statement
-SELECT 
+SELECT
 	CASE
 		WHEN '&my_option' = 'A' THEN 'First option'
 		WHEN '&my_option' = 'B' THEN 'Second option'
@@ -336,7 +336,7 @@ WHERE quantity >= 8;
 
 -- UNION ALL   = 382 (allows duplicates)
 -- UNION 	   = 313 (eliminates the 69 duplicates)
--- INTERSECT   = 69 
+-- INTERSECT   = 69
 -- #1 MINUS #2 = 112 (181-69)
 -- #2 MINUS #1 = 132 (201-69)
 
@@ -418,7 +418,7 @@ WHEN NOT MATCHED THEN
 
 SELECT t.*, s.*
 FROM tbl_transaction t
-    INNER JOIN tbl_transaction_new 
+    INNER JOIN tbl_transaction_new
         ON t.employee_number = s.employee_number AND t.date_of_transaction = s.date_of_transaction
 ;
 
@@ -431,7 +431,7 @@ WHERE e.employee_number IS NULL
 ;
 
 DELETE FROM tbl_transaction_new
-WHERE employee_number IN 
+WHERE employee_number IN
 (
     SELECT DISTINCT t.employee_number
     FROM tbl_transaction_new t
@@ -449,7 +449,7 @@ MERGE INTO tbl_transaction t
 USING tbl_transaction_new s
 ON (t.employee_number = s.employee_number AND t.date_of_transaction = s.date_of_transaction)
 WHEN MATCHED THEN
-	UPDATE SET amount = t.amount + s.amount, comments = 
+	UPDATE SET amount = t.amount + s.amount, comments =
 		CASE WHEN s.amount > 0 THEN 'Updated row positive'
 		CASE WHEN s.amount < 0 THEN 'Updated row negative'
 		ELSE 'Same value' END
@@ -530,7 +530,7 @@ SELECT employee_number
 	,attendance_month
 	,number_attendance
 	,SUM(number_attendance) OVER(PARTITION BY employee_number ORDER BY attendance_month ASC) AS running_total
-	,ROUND(number_attendance / (SUM(number_attendance) 
+	,ROUND(number_attendance / (SUM(number_attendance)
 		OVER(PARTITION BY employee_number ORDER BY attendance_month DESC)) * 100, 4) AS percentage_attendance
 FROM tbl_attendance
 ;
@@ -541,7 +541,7 @@ SELECT employee_number
 	,SUM(number_attendance) OVER(PARTITION BY employee_number
 								,EXTRACT(YEAR FROM attendance_month)
 								ORDER BY attendance_month ASC) AS running_total
-	--,ROUND(number_attendance / (SUM(number_attendance) 
+	--,ROUND(number_attendance / (SUM(number_attendance)
 	--	OVER(PARTITION BY employee_number ORDER BY attendance_month DESC)) * 100, 4) AS percentage_attendance
 FROM tbl_attendance
 ;
@@ -686,22 +686,52 @@ ORDER BY Transaction_Date;
 -- PERCENT_RANK, PERCENTILE_CONT, PERCENTILE_DISC, and more.
 ---------------------------------------------------------------------------------------------------
 
--- ROW_NUMBER (different from 'rownum'), RANK and DENSE_RANK
-SELECT 
+-- ROW_NUMBER (different from 'rownum'; the pseudocolumn), RANK and DENSE_RANK
+SELECT
 	employee_number, attendance_month, number_attendance
 	,rownum -- This is a pseudocolumn. Has a couple of drawbacks
 	,ROW_NUMBER() OVER (
-		ORDER BY employee_number, attendance_month
+		ORDER BY employee_number, attendance_month -- ORDER BY is compulsory
 	) AS the_row_number -- this is an exact duplicate of rownum
 FROM tbl_attendance
 ;
 
-SELECT 
+-- The advantage of using ROW_NUMBER() is that you can use PARTITION BY
+SELECT
 	employee_number, attendance_month, number_attendance
 	,rownum -- This is a pseudocolumn. Has a couple of drawbacks
 	,ROW_NUMBER() OVER (
 		PARTITION BY employee_number
-		ORDER BY attendance_month
-	) AS the_row_number -- the row number is reset after a NEW employee_number appears
+		ORDER BY attendance_month DESC
+	) AS the_row_number -- This is useful because the row number is reset after a NEW employee_number appears
 FROM tbl_attendance
 ;
+
+-- ROW_NUMBER(), RANK() and DENSE_RANK() => There's a difference when there are ties
+SELECT
+    employee_number, attendance_month, number_attendance, rownum
+    , ROW_NUMBER() OVER (PARTITION BY employee_number ORDER BY attendance_month) AS the_row_number
+    , RANK() OVER (PARTITION BY employee_number ORDER BY attendance_month) AS the_rank
+    , DENSE_RANK() OVER (PARTITION BY employee_number ORDER BY attendance_month) AS the_dense_rank
+FROM tbl_attendance
+;
+
+-- With a derived table, we will have duplications:
+SELECT
+    employee_number, attendance_month, number_attendance, rownum
+    -- ROW_NUMBER() -> For each partition, the row number will be unique
+    , ROW_NUMBER() OVER (PARTITION BY employee_number ORDER BY attendance_month) AS the_row_number
+    -- RANK() -> When you have a tie, it takes the first row number, skipping others
+    , RANK() OVER (PARTITION BY employee_number ORDER BY attendance_month) AS the_rank
+    -- DENSE_RANK() -> When you have a tie, it takes the first row number, without skipping others
+    , DENSE_RANK() OVER (PARTITION BY employee_number ORDER BY attendance_month) AS the_dense_rank
+FROM (
+    SELECT * FROM tbl_attendance
+    UNION ALL
+    SELECT * FROM tbl_attendance
+)
+;
+
+-- NTILE(x) almost identical to ROW_NUMBER(), RANK() and DENSE_RANK()
+-- NTILE(10) -> How many groups are you going to rank them in? In 10 groups or buckets
+SELECT
