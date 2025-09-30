@@ -25,7 +25,7 @@ GROUP BY name, last_name
 
 --------------------------------------------------------------------------------------------------
 -- HAVING clause (least used)
--- Equivalent of a 'WHERE' clase after the GROUP BY has been done
+-- Equivalent of a 'WHERE' clause after the GROUP BY has been done
 
 -- Motivation: suppose I have a query that gets me the number of units that a model of iPad
 -- has been sold. iPad mini => 978 M, iPad Pro M2 11" => 829 M, and so on.
@@ -69,6 +69,7 @@ CREATE TABLE iPad_Models
 );
 
 -- Inserting and deleting records (DIU operations => DML = Data Manipulation Language)
+-- DELETE, INSERT, UPDATE = DIU
 INSERT INTO iPad_Models (year_of_release, model)
 VALUES (2010, "iPad 4");
 COMMIT;
@@ -77,7 +78,10 @@ DELETE FROM iPad_Model
 WHERE year_of_release = 2010 AND model = "iPad 4";
 COMMIT;
 
--- What is the difference between DELETE FROM and TRUNCATE TABLE ??
+-- What is the difference between DELETE FROM and TRUNCATE TABLE ?
+-- TRUNCATE removes all rows from a table, but does not log individual row deletions
+-- TRUNCATE cannot be rolled back
+-- TRUNCATE resets identity columns
 TRUNCATE TABLE iPad_Models; -- Does NOT allow a WHERE clause
 
 DROP TABLE iPad_Models; -- This completely erases the table, not only its data
@@ -132,7 +136,14 @@ FLOAT(20) -- Stores everything in binary
 -- FLOAT 0.1 is NOT stored precisely
 BINARY_FLOAT == FLOAT(32)
 
+-- DECIMAL and NUMERIC are both ANSI SQL standards
 -- Use DECIMAL(p,s) or NUMERIC(p,s) instead
+-- These are both mapped to Oracle's internal "NUMBER" type, which is not an ANSI SQL standard.
+
+-- ANSI SQL Standard Types for exact numeric types:
+-- 1] NUMERIC(p,s)
+-- 2] DECIMAL(p,s)
+-- 3] INTEGER, SMALLINT, BIGINT
 ---------------------------------------------------------------------------------------------------
 -- Character data types
 CHAR 			-- Fixed length, unknown encoding system
