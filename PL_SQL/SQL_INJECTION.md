@@ -54,7 +54,6 @@ END;
 /
 ```
 
-
 ### Safe SQL Code
 
 ```sql
@@ -68,4 +67,41 @@ BEGIN
     EXECUTE IMMEDIATE vsql INTO vresult USING vname;
 END;
 /
+```
+
+\* Interesting: XML databases can have similar problems:
+e.g. XPath and XQuery injection.
+
+# A Common SQL Injection Example with Java
+
+```java
+String query = "SELECT account_balance FROM user_data WHERE user name = " 
+    + request.getParameter("customerName");
+
+try {
+    Statement statement = connection.createStatement(...);
+    ResultSet results = statement.executeQuery(query);
+}
+```
+
+## Primary Defenses
+
+1. Use **Prepared Statements** with Parameterized Queries.
+2. Use of Properly Constructed STORED PROCEDURES.
+3. White List Validation.
+4. (Last Resort) Escaping all user input.
+
+# Second Order SQL Injection Example
+## PL/SQL Using Database Values in an SQL Statement Can Result in SQL Injection
+
+```sql
+IF if_number(p_id) THEN
+    vsql_1 := 'SELECT name FROM product WHERE id = ''' || p_id || '''';
+    EXECUTE IMMEDIATE vsql_1 INTO p_name;
+
+    vsql_2 := 'SELECT client_id FROM invoices WHERE product_name = ''' || p_name || '''';
+    EXECUTE IMMEDIATE vsql_2 INTO client_id;
+
+    DBMS_OUTPUT.PUT_LINE('Client ID = ' || client_id);
+END IF;
 ```
