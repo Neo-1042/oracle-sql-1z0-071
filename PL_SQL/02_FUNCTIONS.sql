@@ -56,7 +56,8 @@ BEGIN
     v_numero_decimal_2 := TRUNC(v_numero_decimal);
     v_numero_decimal_2 := ROUND(v_numero_decimal);
 
-    -- NVL(variable, 'Caso No Nulo', 'Viene NULL');
+    -- NVL(variable, 'Viene NULL');
+    -- NVL2(variable, 'Not null case', 'Null case');
 
 
 END;
