@@ -37,7 +37,7 @@ BEGIN
 END;
 /
 ---------------------------------------------------------------------------------------------------
--- CASE
+-- CASE expr
 ---------------------------------------------------------------------------------------------------
 DECLARE
     v_departamento tbl_department.department_name%TYPE;
@@ -58,3 +58,24 @@ BEGIN
     END CASE;
 END;
 /
+---------------------------------------------------------------------------------------------------
+-- SEARCHED CASE
+---------------------------------------------------------------------------------------------------
+DECLARE
+    v_departamento tbl_department.department_name%TYPE;
+BEGIN
+    SELECT d.department_name
+        INTO v_departamento
+    FROM tbl_department d
+    WHERE d.department_id = 200;
+
+    CASE 
+        WHEN v_departamento = 'Operations' THEN 
+            DBMS_OUTPUT.PUT_LINE('El departamento se encuentra en el piso 4');
+        WHEN v_departamento IN ('IT Support','NOC','IT Help Desk') THEN
+            DBMS_OUTPUT.PUT_LINE('El departamento se encuentra en el piso 3');
+    ELSE 'Departamento no valido'
+    END CASE;
+END;
+/
+---------------------------------------------------------------------------------------------------
