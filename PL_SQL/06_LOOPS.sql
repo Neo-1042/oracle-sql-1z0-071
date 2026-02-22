@@ -1,5 +1,5 @@
 ---------------------------------------------------------------------------------------------------
--- LOOP, END LOOP, CONTINUE, WHILE,
+-- LOOP, END LOOP, CONTINUE, WHILE, FOR
 ---------------------------------------------------------------------------------------------------
 SET SERVEROUTPUT ON;
 DECLARE
@@ -40,6 +40,19 @@ BEGIN
     WHILE v_counter < 10 LOOP
         v_counter := v_counter + 1;
         DBMS_OUTPUT.PUT_LINE('El número es = ' || v_counter);
+    END LOOP;
+END;
+/
+---------------------------------------------------------------------------------------------------
+-- FOR
+DECLARE
+    v_texto  VARCHAR2(25);
+BEGIN
+    v_texto := 'El valor del numero es = ';
+
+    -- No es necesario declarar 'numero'. Siempre es una variable numérica y es local al ciclo FOR
+    FOR numero IN 1..7 LOOP
+        DBMS_OUTPUT.PUT_LINE(v_texto || numero);
     END LOOP;
 END;
 /
