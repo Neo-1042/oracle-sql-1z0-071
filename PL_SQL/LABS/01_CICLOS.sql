@@ -31,3 +31,24 @@ BEGIN
     END CASE;
 END;
 /
+
+-- 2] Calcular la potencia entera de un número cualquiera e imprimir el resultado.
+
+DECLARE
+    v_base NUMBER;
+    v_exponente NUMBER;
+    v_resultado NUMBER;
+    v_contador NUMBER;
+BEGIN
+    v_base := 2;
+    v_exponente := 4;
+    v_resultado := 1;
+
+    WHILE (v_contador <= v_exponente) LOOP
+        v_resultado := v_resultado * v_base;
+        v_contador := v_ contador + 1;
+    END LOOP;
+
+    DBMS_OUTPUT.PUT_LINE('Resultado = ' || v_resultado);
+END;
+/
