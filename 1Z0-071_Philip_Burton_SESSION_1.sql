@@ -31,7 +31,7 @@ GROUP BY name, last_name
 -- has been sold. iPad mini => 978 M, iPad Pro M2 11" => 829 M, and so on.
 -- So, you'd query something like this:
 SELECT iPad_model, units_sold, COUNT(*) AS "Number of sold units"
-FROM iPad_Sales -- In reality, this would be an 'join' query
+FROM iPad_Sales -- In reality, this would be a 'join' query
 GROUP BY iPad_model, units_sold
 ;
 -- But now, I would like to filter by a minimum # of iPad sales, say, 500 M units sold.
@@ -69,7 +69,7 @@ CREATE TABLE iPad_Models
 );
 
 -- Inserting and deleting records (DIU operations => DML = Data Manipulation Language)
--- DELETE, INSERT, UPDATE = DIU
+-- DELETE, INSERT, UPDATE = DIU.
 INSERT INTO iPad_Models (year_of_release, model)
 VALUES (2010, "iPad 4");
 COMMIT;
@@ -114,8 +114,7 @@ NUMERIC = NUMERIC(38,0)
 NUMERIC(7,2) -- 12345.67
 
 NUMERIC(7,7) -- 0.1234567
----------------------------------------------------------
-
+---------------------------------------------------------------------------------------------------
 DROP TABLE testing_numbers;
 CREATE TABLE testing_numbers
 (
@@ -203,6 +202,10 @@ FROM DUAL;
 SELECT Q'!Graham's Book!' AS RESULT
 FROM DUAL;
 
+-- I think this is my favorite:
+SELECT Q'[Roger Penrose's Book]' AS RESULT
+FROM DUAL;
+
 SELECT Q'(Graham's Book)' AS RESULT
 FROM DUAL;
 
@@ -217,6 +220,7 @@ SELECT 'The total cost is $' || TO_CHAR(10542.00, '9999.99') AS COST
 FROM DUAL;
 
 TO_CHAR(0.9,'999990.99')
+'-- This single quote is just to un-break the VS Code coloring.
 -----------------------------------------------
 SELECT 'The total cost is: ' || TO_CHAR(-1234567.89, 'S$9G999G999G999D99') AS total_cost
 FROM DUAL; -- Notice the G for grouping and the D for decimal dot
@@ -254,8 +258,9 @@ FROM DUAL;
 DROP TABLE tbl_dates_demo;
 
 CREATE TABLE tbl_dates_demo
-(my_date DATE,
-my_timestamp TIMESTAMP(6) -- DEFAULT: 6 decimal places
+(
+	my_date DATE,
+	my_timestamp TIMESTAMP(6) -- DEFAULT: 6 decimal places
 );
 
 INSERT INTO tbl_dates_demo(my_date)
@@ -286,6 +291,7 @@ LAST_DAY(my_date) -- Last day of the month
 NEXT_DAY(my_date, 'MONDAY') -- Get the next monday from 'my_date'
 
 -- EXTRACT works only with TIMESTAMP
+-- 20260907: this is a very useful function, nice.
 EXTRACT(YEAR FROM my_timestamp)
 EXTRACT(MONTH FROM my_timestamp)
 EXTRACT(DAY FROM my_timestamp)
@@ -295,10 +301,14 @@ SELECT my_date, TRUNC(my_date) - EXTRACT(DAY FROM my_date) + 1 AS RESULT
 FROM DUAL;
 
 my_timestamp1 - my_timestamp2
-MONTHS_BETWEEN(my_timestamp2, my_timestamp1)
+MONTHS_BETWEEN(my_timestamp2, my_timestamp1) -- Returns a decimal point number, e.g. 10.245
 
 SELECT current_date, sysdate, current_timestamp
 FROM DUAL;
+
+SELECT CURRENT_TIMESTAMP "Yo prefiero este formato"
+FROM DUAL; -- YYYY-MM-DD 'HH24:MI:SS.FF3"Z"' 
+-- "Z" => Zulu = UTC Time
 ----------------------------------------------------------------------------------------------
 -- Converting DATES to STRINGs
 -- YeaR: First (Y) vs last(R) letter
@@ -336,9 +346,6 @@ SELECT EXTRACT(MONTH FROM current_timestamp) AS mes_actual
 FROM DUAL;
 
 SELECT TRUNC(TIMESTAMP '2025-03-11 20') AS time_stamp_custom
-FROM DUAL;
-
-SELECT sysdate, current_date, current_timestamp
 FROM DUAL;
 
 -- Convert an american string into a date:
