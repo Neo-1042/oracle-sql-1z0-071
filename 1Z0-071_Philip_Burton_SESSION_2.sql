@@ -152,7 +152,7 @@ SELECT SUBSTR(employee_first_name,1,1)
 	,COUNT(*) AS times_per_initial_letter -- COUNT(*) counts number of rows that have the same initial letter,...
 FROM tbl_employee
 GROUP BY SUBSTR(employee_first_name,1,1)
-HAVING COUNT(*) >= 50 -- Only works on data that has been AGGREGATE
+HAVING COUNT(*) >= 50 -- Only works on data that has been AGGREGATED
 ORDER BY COUNT(*) DESC
 ;
 
@@ -233,7 +233,7 @@ CREATE TABLE tbl_employee (
 	,department 				VARCHAR2(20 CHAR)
 );
 
--- NUMBER is preferred over DECIMAL in Oracle SQL (although they are almost the same)
+-- In Oracle SQL, NUMBER is preferred over DECIMAL (although they are almost the same)
 CREATE TABLE tbl_transaction
 (
 	amount 					NUMBER(15,2) NOT NULL
@@ -256,6 +256,7 @@ COMMIT;
 -- Drag and drop
 -- Red stars or asterisks (*) indicate that the field is NOT NULL(ABLE)
 ------------------------------------------------------------------------------------------------
+-- JOIN QUERIES
 SELECT
 	employee_number
 	,SUM(amount) AS total_amount
@@ -267,7 +268,7 @@ GROUP BY employee_number
 SELECT *
 FROM tbl_employee e
 	INNER JOIN tbl_transaction t
-	ON e.employee_number = t.employee_number -- TRUE when it's the same person
+		ON e.employee_number = t.employee_number -- TRUE only when it's the same person
 ;
 
 SELECT 
@@ -277,7 +278,7 @@ SELECT
 	,SUM(amount) AS total_amount
 FROM tbl_employee e
 	INNER JOIN tbl_transaction t
-	ON e.employee_number = t.employee_number -- TRUE when it's the same person
+		ON e.employee_number = t.employee_number -- TRUE only when it's the same person
 GROUP BY
 	e.employee_number,e.employee_first_name,e.employee_last_name
 ;
@@ -289,6 +290,7 @@ GROUP BY
 -- CROSS JOIN (Not recommended. Cartesian product A x B = {(a,b) | a in A, b in B})
 -----------------------------------------------------------------------------------------------------
 -- INNER JOIN example
+-- 898 results
 SELECT 
 	emp.employee_number
 	,emp.employee_first_name
@@ -298,8 +300,10 @@ FROM tbl_employee emp
 	INNER JOIN tbl_transaction tr 
 		ON emp.employee_number = tr.employee_number
 GROUP BY emp.employee_number, emp.employee_first_name, emp.employee_last_name
-; -- 898 results
+;
+------------------------------------------------------------------------------------------------
 -- LEFT OUTER JOIN example
+-- 1005 results
 SELECT 
 	emp.employee_number
 	,emp.employee_first_name
@@ -309,8 +313,10 @@ FROM tbl_employee emp
 	LEFT OUTER JOIN tbl_transaction tr 
 		ON emp.employee_number = tr.employee_number
 GROUP BY emp.employee_number, emp.employee_first_name, emp.employee_last_name
-; -- 1005 results
+;
+------------------------------------------------------------------------------------------------
 -- RIGHT OUTER JOIN example
+-- 50 rows
 SELECT 
 	emp.employee_number
 	,emp.employee_first_name
@@ -320,8 +326,10 @@ FROM tbl_employee emp
 	RIGHT OUTER JOIN tbl_transaction tr 
 		ON emp.employee_number = tr.employee_number
 GROUP BY emp.employee_number, emp.employee_first_name, emp.employee_last_name
-; -- 50 rows
+;
+------------------------------------------------------------------------------------------------
 -- FULL OUTER JOIN example
+-- 1109 results (fetches rows where almost every field is null)
 SELECT 
 	emp.employee_number
 	,emp.employee_first_name
@@ -331,7 +339,7 @@ FROM tbl_employee emp
 	FULL OUTER JOIN tbl_transaction tr 
 		ON emp.employee_number = tr.employee_number
 GROUP BY emp.employee_number, emp.employee_first_name, emp.employee_last_name
-; -- 1109 results (fetches rows where almost every field is null)
+;
 ------------------------------------------------------------------------------------------------
 -- Practice Activity 11. JOINs
 -- 1. Code a SELECT statement which joins tbl_transaction with tbl_product (ON product_id)
@@ -370,6 +378,7 @@ GROUP BY sub.product_subcategory_id
 ;
 ------------------------------------------------------------------------------------------------
 -- ALL vs DISTINCT
+-- ALL is the default behavior of a SELECT clause, which is why it is rarely explicitly written.
 SELECT COUNT(ALL department) AS number_of_departments
 FROM tbl_employee
 ;
@@ -401,13 +410,13 @@ SELECT department, COUNT(*) AS number_per_department
 FROM tbl__employee
 GROUP BY department
 ;
---|DEPARTMENT |  #   |
-----------------------
--- Litigation | 231  |
--- HR         | 231  |
--- Customer   | 290  |
--- Commercial | 255  |
-----------------------
+--| DEPARTMENT | NUMBER_PER_DEPARTMENT   |
+------------------------------------------
+--  Litigation | 		231  			 |
+--  HR         | 		231 			 |
+--  Customer   | 		290 			 |
+--  Commercial | 		255 			 |
+------------------------------------------
 -- Sub-query. Derived tables
 SELECT department FROM (	
 	SELECT department, COUNT(*) AS number_per_department
@@ -430,6 +439,8 @@ CREATE TABLE tbl_department AS
 		GROUP BY department
 	)
 );
+
+-- BOOKMARK 20260912
 
 SELECT * FROM tbl_department;
 -- Add a new column to tbl_department
