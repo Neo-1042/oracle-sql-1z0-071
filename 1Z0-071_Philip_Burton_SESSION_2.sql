@@ -2,12 +2,13 @@
 -- 1Z0-071 Oracle SQL Database
 -- SESSION 2
 -- 11/march/2025
+-- Last review: 20260911
 
 -- Using SELECT statements to access data from more than one table using equijoins and non-equijoins
 -- Join a table to itself by using a self-join
--- View data that generallt does not meet a join condition by using outer joins
+-- View data that generally does not meet a JOIN condition by using OUTER JOINs.
 
--- Using a SET OPERATOR to combine multiple queries into a single query :O
+-- Using a SET OPERATOR to combine multiple queries into a single query  (UNION, UNION ALL)
 ---------------------------------------------------------------------------------------------------
 -- Creating TBL_EMPLOYEE
 DROP TABLE tbl_employee;
@@ -76,9 +77,32 @@ WHERE employee_number IN (200, 203, 207, 210);
 -- DATES
 SELECT * FROM tbl_employee
 WHERE date_of_birth >= TO_DATE('1995-12-07', 'YYYY-MM-DD')  AND date_of_birth <= TO_DATE('2007-01-01', 'YYYY-MM-DD'); 
--- The computer assumes 00:00 when dates are actually TIMESTAMP
+-- The computer assumes 00:00 when dates are actually TIMESTAMP.
 
--- SARG -> Indexes
+-- SARG = Search Argument
+-- SARG -> Useful for indexing
+-- A query is SARGable when the condition in a WHERE, JOIN ... ON or HAVING clause allows the
+-- Oracle CBO = Cost-Based Optimizer to perform an Index Range Scan or Index Unique Scan
+-- rather than a FULL table scan. 
+------------------------------------------------------------------------------------------------------
+-- Examples:
+-- NON-SARGABLE QUERY:
+-- Applying a FUNCTION to a table column
+-- This forces a full table scan, since the engine does not know the transformed value ahead of time:
+SELECT * FROM employees WHERE UPPER(last_name) = 'ANDERSON';
+
+-- SARGABLE QUERY:
+-- Compare raw columns or use a function-based index:
+SELECT * FROM employees WHERE last_name = 'Anderson';
+------------------------------------------------------------------------------------------------------
+-- NON-SARGABLE QUERY
+-- Doing math on a whole column hides the raw values from the index tree:
+SELECT * FROM tbl_orders WHERE salary * 1.1 > 50000;
+
+-- SARGABLE QUERY (Better)
+-- Isolate the column value from the math operator:
+SELECT * FROM tbl_orders WHERE salary > 50000 / 1.1;
+
 ------------------------------------------------------------------------------------------------------
 -- Practice Activity 8
 -- p stands for practice
