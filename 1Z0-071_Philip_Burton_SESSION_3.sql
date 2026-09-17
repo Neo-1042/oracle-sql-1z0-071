@@ -1,16 +1,17 @@
 ---------------------------------------------------------------------------------------------------
 -- 1Z0-071 Oracle SQL Database
 -- SESSION 3
--- 14/april/2025
+-- Start: 20250414
+-- Last review: 20260916
 ---------------------------------------------------------------------------------------------------
 -- View data that generally does not meet a JOIN condition by using OUTER JOINS.
--- Use DML to manage the data in tables
--- DDL, DML, TCL
--- Constraints for tables
--- Simple and complex VIEWs
--- Set operator to combine multiple queries
--- Control the order of rows returned
--- Merge rows in a table
+-- Use DML to manage the data in tables.
+-- DDL, DML, TCL.
+-- Constraints for tables.
+-- Simple and complex VIEWs.
+-- Set operator to combine multiple queries.
+-- Control the order of rows returned.
+-- Merge rows in a table.
 ---------------------------------------------------------------------------------------------------
 -- Missing Data
 SELECT
@@ -25,8 +26,8 @@ WHERE t.employee_number IS NULL
 GROUP BY e.employee_number, t.employee_number, e.employee_first_name, e.employee_last_name
 ORDER BY e.employee_number, t.employee_number, e.employee_first_name, e.employee_last_name
 ; -- Returns 107 results; none of which have corresponding t_number (IS NULL)
--- Warning: in some versions of SQL, ORDER BY are NOT allowed in derived sub-queries
--- Making the last query a sub-query for a new one
+-- Warning: in some versions of SQL, ORDER BYs are NOT allowed in derived sub-queries.
+-- Making the last query a sub-query for a new one.
 SELECT *
 FROM (
 	SELECT
@@ -39,7 +40,7 @@ FROM (
 		LEFT OUTER JOIN tbl_transaction t ON e.employee_number = t.employee_number
 	WHERE t.employee_number IS NULL
 	GROUP BY e.employee_number, t.employee_number, e.employee_first_name, e.employee_last_name
-	ORDER BY e.employee_number, t.employee_number, e.employee_first_name, e.employee_last_name
+	ORDER BY e.employee_number, t.employee_number, e.employee_first_name, e.employee_last_name -- Careful with this ORDER BY
 )
 ;
 ---------------------------------------------------------------------------------------------------
@@ -75,7 +76,7 @@ GROUP BY e.employee_number, t.employee_number, e.employee_first_name, e.employee
 ORDER BY e.employee_number, t.employee_number, e.employee_first_name, e.employee_last_name
 ; -- 104 transactions where the employee_number is NULL (phantom transactions)
 ---------------------------------------------------------------------------------------------------
--- Tracking down the phantom transactions and deleting data
+-- Tracking down the phantom transactions and deleting data (cool).
 SELECT
 	e.employee_number AS e_number
 	,t.employee_number AS t_number
@@ -84,7 +85,7 @@ SELECT
 	,t.amount AS total_amount
 FROM tbl_employee e
 	RIGHT OUTER JOIN tbl_transaction t ON e.employee_number = t.employee_number
-WHERE e.employee_number IS NULL -- *************************
+WHERE e.employee_number IS NULL -- ************************* this is the phantom condition
 -- GROUP BY e.employee_number, t.employee_number, e.employee_first_name, e.employee_last_name. t.amount
 ORDER BY e.employee_number, t.employee_number, e.employee_first_name, e.employee_last_name
 ; -- 256 phantom transactions
@@ -98,7 +99,7 @@ SELECT * FROM tbl_employee e
 ---------------------------------------------------------------------------------------------------
 START TRANSACTION; -- BEGIN; BEGIN WORK;
 
-SELECT COUNT(*) AS number_of_transactions
+SELECT COUNT(*) AS number_of_transactions_before_cleansing
 FROM tbl_transaction;
 
 DELETE
@@ -112,7 +113,7 @@ WHERE employee_number IN
 		WHERE e.employee_number IS NULL -- *************************
 	-- ORDER BY e.employee_number, t.employee_number, e.employee_first_name, e.employee_last_name
 );-- *** Flashbacked tables will be seen later ***
-SELECT COUNT(*) AS number_of_transactions
+SELECT COUNT(*) AS number_of_transactions_after_cleansing
 FROM tbl_transaction;
 
 ROLLBACK; -- Undo the changes
@@ -141,9 +142,12 @@ WHERE t.product_id IS NULL
 SELECT 
 	p.product_id
 FROM tbl_product p 
-	LEFT OUTER JOIN tbl_transaction t ON p.product_id = t.product_id
+	LEFT OUTER JOIN tbl_transaction t
+		ON p.product_id = t.product_id
 WHERE t.product_id IS NULL
+ORDER BY p.product_id ASC
 ;
+-- BOOKMARK 20260916
 -- 2] Change all the transactions with transaction_date 2013 -> 2023, 2014 -> 2024
 -- ADD_MONTHS()
 START TRANSACTION;

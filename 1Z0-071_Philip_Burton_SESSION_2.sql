@@ -440,8 +440,6 @@ CREATE TABLE tbl_department AS
 	)
 );
 
--- BOOKMARK 20260912
-
 SELECT * FROM tbl_department;
 -- Add a new column to tbl_department
 ALTER TABLE tbl_department 
@@ -470,12 +468,13 @@ GROUP BY d.department, d.department_head
 -- Commercial | 255.1421     |
 ------------------------------
 TRUNCATE TABLE tbl_department;
-COMMIT;
+-- COMMIT; TRUNCATE does not need an explicit COMMIT statement.
 INSERT INTO tbl_department VALUES('Customer', 'Andrew');
 INSERT INTO tbl_department VALUES('Commercial', 'Bryan');
 INSERT INTO tbl_department VALUES('HR', 'Catherine');
 INSERT INTO tbl_department VALUES('Litigation', 'Andrew');
 INSERT INTO tbl_department VALUES('Accounts', 'James');
+COMMIT; -- ROLLBACK;
 -- !! Oracle SQL does not permit using 'AS' when: INNER JOIN tbl_foo AS f :c
 ------------------------------------------------------------------------------------------------
 -- Practice Activity 12
