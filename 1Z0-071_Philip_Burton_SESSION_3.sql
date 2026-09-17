@@ -147,7 +147,6 @@ FROM tbl_product p
 WHERE t.product_id IS NULL
 ORDER BY p.product_id ASC
 ;
--- BOOKMARK 20260916
 -- 2] Change all the transactions with transaction_date 2013 -> 2023, 2014 -> 2024
 -- ADD_MONTHS()
 START TRANSACTION;
@@ -162,17 +161,21 @@ SET transaction_date = ADD_MONTHS(transaction_date, 12*10) -- Adds 10 years
 WHERE EXTRACT(YEAR FROM transaction_date) = 2014
 ;
 
-SELECT * FROM tbl_transaction WHERE EXTRACT(YEAR FROM transaction_date) = 2023;
+SELECT * FROM tbl_transaction 
+WHERE EXTRACT(YEAR FROM transaction_date) = 2023;
 
 ROLLBACK;
 COMMIT;
 
--- 3] Delete all the transactions from 31 July 2013
+-- 3] Delete all the transactions from 31 July 2013 on
 -- Query from the 1st of August, 2013, to avoid deleting data on the 31 July 2013 at 5PM, for example
 SELECT COUNT(*) 
 FROM tbl_transaction
 WHERE transaction_date >= TO_DATE('2013-08-01', 'YYYY-MM-DD')
 ;
+
+SELECT TO_DATE('2026-09-17', 'YYYY-MM-DD') AS review
+FROM DUAL;
 
 DELETE 
 FROM tbl_transaction
@@ -184,18 +187,18 @@ ROLLBACK;
 -- TERMINOLOGY
 ---------------------------------------------------------------------------------------------------
 -- C:\app\plb\product\18.0.0\oradata\XE
--- *.DBF files => Table spaces to the system. 
+-- *.DBF files => Table spaces of the system. 
 -- SYSAUX01.DBF, SYSTEM01.DBF are table spaces. Data dictionary. Tables, procedures
 -- TEMP01.DBF
 -- UNDOTBS01.DBF
 -- USERS01.DBF
 ---------------------------------------------------------------------------------------------------
 -- DML = Data Manipulation Language
--- 		DIU = DELETE, INSERT, UPDATE + MERGE, SELECT
+-- 		DIUS = DELETE, INSERT, UPDATE + MERGE, SELECT
 -- DDL = Data Definition Language
 -- 		CREATE, DROP, ALTER, TRUNCATE + GRANT, COMMENT ... db objects
 -- DCL = Data Control Language (infrequent)
--- 		Privileges, roles, grants
+-- 		Privileges, roles, grants. GRANT SELECT ON ...
 -- TCL = Transaction Control Language
 -- 	     COMMIT, ROLLBACK, SAVEPOINT, SET TRANSACTION
 ---------------------------------------------------------------------------------------------------
@@ -207,9 +210,10 @@ ROLLBACK;
 -- 20'000 records run successfully, but then, the power shuts down in all of the bank
 -- Power comes back on, Oracle SQL comes on and recognizes the error, and then 
 -- performs a ROLLBACK on those 20'000 affected records.
+-- ACID Review 20260917:
 -- The properties of a transaction are ACID:
 -- A = Atomic     > Either all commited or all rollbacked
--- C = Consistent > Must leave the DB in a consistent state, i.e.,it refers to constraints
+-- C = Consistent > Must leave the DB in a consistent state, i.e. constraints.
 -- I = Isolated   > If multiple users are performing transactions on the same rows/objects, then
 --					transactions are isolated by locking off individual rows or pages 
 -- D = Durable	  > Effects are permanent
@@ -219,9 +223,10 @@ ROLLBACK;
 -- DDL does NOT need explicit transaction statements (START TRANSACTION, COMMIT, ROLLBACK)
 -- Implicit transactions take place:
 -- COMMIT transaction;
--- BEGIN transaction;
+
+-- BEGIN transaction; (Implicit)
 DROP TABLE tbl_employee;
--- COMMIT transaction;
+-- COMMIT transaction; (Implicit)
 
 -- DML need explicit: COMMIT or ROLLBACK; for Oracle SQL
 INSERT INTO tbl_employee VALUES (1,2,3,4,5);
@@ -239,7 +244,7 @@ WHERE employee_number = 123
 ;
 COMMIT;
 ---------------------------------------------------------------------------------------------------
--- TCL. SAVEPOINTS
+-- TCL SAVEPOINTS
 ---------------------------------------------------------------------------------------------------
 -- As soon as you put in a DDL statement, any previous transaction will be automaticallly committed.
 
@@ -284,7 +289,7 @@ SAVEPOINT spt_2;
 
 SELECT * FROM tbl_employee;
 
-ROLLBACK spt_1;
+ROLLBACK spt_1; -- Go back to the point where neither Julia nor Maquiavelo exist.
 ---------------------------------------------------------------------------------------------------
 -- Formatting in Oracle SQL Developer
 -- Ctrl + F7
@@ -378,6 +383,7 @@ START TRANSACTION;
 
 UPDATE tbl_transaction
 SET date_of_entry = NULL
+WHERE 1=1
 ; -- Set all the previous transactions' date_of_entry to NULL, since we don't know when were they done
 COMMIT;
 
@@ -389,7 +395,6 @@ COMMIT;
 -- So, if I want to still have a default value even when people send a "NULL" value, then
 ALTER TABLE tbl_transaction
 MODIFY (date_of_entry TIMESTAMP DEFAULT ON NULL SYSDATE); -- Only from Oracle 12c onwards
-
 ---------------------------------------------------------------------------------------------------
 -- CHECK constraint
 -- Go through an entire row for a specific criteria
@@ -397,6 +402,7 @@ MODIFY (date_of_entry TIMESTAMP DEFAULT ON NULL SYSDATE); -- Only from Oracle 12
 ALTER TABLE tbl_employee
 ADD CONSTRAINT chk_amount CHECK (amount > -1000 AND amount < 1000);
 
+-- BOOKMARK 20260917
 ALTER TABLE tbl_employee
 ADD CONSTRAINT chk_middlename CHECK (
 	REPLACE(employee_middle_name,'.','') = employee_middle_name OR employee_middle_name IS NULL
