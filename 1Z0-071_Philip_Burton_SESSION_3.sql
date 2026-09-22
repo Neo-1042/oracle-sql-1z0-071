@@ -501,10 +501,9 @@ CREATE OR REPLACE TABLE tbl_employee3
 );
 -- Better: GENERATED ALWAYS AS IDENTITY
 ---------------------------------------------------------------------------------------------------
--- BOOKMARK: 20260919
 -- FOREIGN KEY
--- The FK is the counterpart to the PK
--- SEEKING => A FOREIGN KEY uses the dictionary (sorted list of ids) set up by the PRIMARY KEY
+-- The FK is the counterpart to the PK,
+-- SEEKING => A FOREIGN KEY uses the dictionary (sorted list of ids) set up by the PRIMARY KEY.
 -- SCANNING => Going through a table without an index (e.g. when no PK has been setup)
 
 -- A FOREIGN KEY value is constrained to the corresponding values of the PRIMARY KEY.
@@ -512,15 +511,17 @@ CREATE OR REPLACE TABLE tbl_employee3
 -- FK refers to another table.
 
 -- A FOREIGN KEY can be NULL (e.g. NULL employee_number on the tbl_transaction table)
--- FK are not UNIQUE constraints
+-- FK are NOT UNIQUE constraints.
 
 -- Now, what happens when the PK in the main table changes?
 -- If an employee number changes on tbl_employee, it won't automatically change in tbl_car.
 -- For this, you need to use a TRIGGER (PL/SQL)
+-- 20260921 review: IMPORTANT -> FK values do not automatically change if their corresponding
+-- PK changes. For this behavior, you need to use TRIGGERs (PL/SQL).
 
 -- Options of behavior when changing an employee number on tbl_employee
--- 1] No action (do not allow) DEFAULT
--- 2] Cascade
+-- 1] No action (do not allow), this is the DEFAULT behavior.
+-- 2] CASCADE
 -- 3] Set NULL (when employee_number = 6 is deleted, then set null on tbl_car)
 ---------------------------------------------------------------------------------------------------
 -- Attempt 1
@@ -546,7 +547,8 @@ SET TRANSACTION NAME 'deleting_employee_numbers'
 SELECT * FROM tbl_employee WHERE employee_number = 123;
 SELECT * FROM tbl_transaction WHERE employee_number = 123;
 
-DELETE FROM tbl_employee
+DELETE
+FROM tbl_employee
 WHERE employee_number = 123;
 -- Error: integrity constraint (SYS.FK_TBL_TRANSACTION_EMP_NUMBER) violated. Child record found
 
@@ -563,8 +565,9 @@ ENABLE NOVALIDATE
 DELETE FROM tbl_employee
 WHERE employee_number = 123; -- OK
 
-COMMIT;
+COMMIT; -- ROLLBACK;
 -- Remember: every time you do an ALTER, you implicitly COMMIT all pending transactions
+-- BOOKMARK 20260921
 ALTER TABLE tbl_transaction
 MODIFY employee_number DECIMAL(4,0) NULL; -- Allow nulls
 
