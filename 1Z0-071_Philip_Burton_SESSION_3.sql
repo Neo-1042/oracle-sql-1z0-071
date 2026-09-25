@@ -567,7 +567,6 @@ WHERE employee_number = 123; -- OK
 
 COMMIT; -- ROLLBACK;
 -- Remember: every time you do an ALTER, you implicitly COMMIT all pending transactions
--- BOOKMARK 20260921
 ALTER TABLE tbl_transaction
 MODIFY employee_number DECIMAL(4,0) NULL; -- Allow nulls
 
