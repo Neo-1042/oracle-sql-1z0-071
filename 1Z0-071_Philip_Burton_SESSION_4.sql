@@ -1,26 +1,18 @@
 ---------------------------------------------------------------------------------------------------
 -- 1Z0-071 Oracle SQL Database
 -- SESSION 4
--- 02/MAY/2025
+-- START = 20250502
+-- LAST REVIEW = 20260926
 ---------------------------------------------------------------------------------------------------
 -- SET operators to combine multiple queries into a single query (UNION, UNION ALL)
 -- Control the order of rows returned
 -- MERGE rows in a table
--- Ampersand (&) substitution to restrict and sort output at runtime
+-- Ampersand (&) substitution to restrict and SORT OUTPUT at runtime
 -- OVER: Analytical functions (PERCENTILE_CONT, STDDEV, LAG, LEAD) in SELECT statements
 ---------------------------------------------------------------------------------------------------
 -- CREATING VIEWS
--- Encapsulate the 'SELECT' statements to be used in the future
-
-SELECT d.department, t.employee_number, t.date_of_transaction, t.amount AS total_amount
-FROM tbl_department d
-	LEFT JOIN tbl_employee e    ON d.department = e.department
-	LEFT JOIN tbl_transaction t ON e.employee_number = t.employee_number
-WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that
--- he can change it at will
-ORDER BY d.department, t.employee_number
-;
-
+-- Main Idea: Encapsulate the 'SELECT' statements to be used in the future.
+-- First, build the core query:
 SELECT d.department, t.employee_number AS empnum, SUM(t.amount) AS total_amount
 FROM tbl_department d
 	LEFT JOIN tbl_employee e    ON d.department = e.department
@@ -28,21 +20,22 @@ FROM tbl_department d
 GROUP BY d.department, t.employee_number
 ORDER BY d.department, t.employee_number
 ;
-
 -- There are four main reasons to use views:
--- 1] Restrict the user to specific rows
--- 2] Restrict the user to specific columns
--- 3] Creating summaries
--- 4] Join columns from multiple tables to group logically related information
+-- 1] Restrict the user to specific rows.
+-- 2] Restrict the user to specific columns.
+-- 3] Creating summaries.
+-- 4] Join columns from multiple tables to group logically related information.
+-- 		I would say this is the most important reason, since table normalization usually is not so user-friendly
+-- 		for visualizing data.
 
 CREATE VIEW vw_department1 AS (
 	SELECT d.department, t.employee_number, t.date_of_transaction, t.amount AS total_amount
 	FROM tbl_department d
 		LEFT JOIN tbl_employee e    ON d.department = e.department
 		LEFT JOIN tbl_transaction t ON e.employee_number = t.employee_number
-	WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user this code so that
-	-- he can change it at will
+	WHERE t.employee_number BETWEEN 120 AND 139 -- We don't want to give a user access to this code.
 	ORDER BY d.department, t.employee_number -- Oracle SQL allows ORDER BY within views
+	-- Other DB engines do not allow this. 
 );
 
 CREATE VIEW vw_dept_summary AS (
@@ -55,6 +48,7 @@ CREATE VIEW vw_dept_summary AS (
 );
 
 -- * Note: In this way, views are automatically created like so:
+-- Prohibit editions
 CREATE OR REPLACE FORCE NONEDITIONABLE VIEW "SYS"."vw_dept_summary" ("DEPARTMENT", "EMPLOYEE_NUMBER") AS ...
 ---------------------------------------------------------------------------------------------------
 -- Altering or dropping VIEWs
@@ -75,17 +69,18 @@ CREATE OR REPLACE VIEW vw_department1 AS (
 -- DML on VIEWs
 -- INSERT INTO vw ...
 -- Error: Cannot modify a column which maps to a non key-preserved table
--- Action: Modify the underlying base tables directly
+-- Action: Modify the underlying base tables directly.
 -- Alternative solution: analyze and fix the PK/FK constraints on the underlying tables
 
 ALTER TABLE tbl_department
 ADD CONSTRAINT pk_tbl_department PRIMARY KEY (department)
 ENABLE NOVALIDATE;
 -- INSERT INTO vw... works, but it's not recommended. Better to insert directly into the underlying tables
+-- INSERT INTO views is a BAD PRACTICE.
 
 UPDATE vw_by_department
 SET employee_number = 142
-WHERE employee_number = 132; -- Not in the range of the view. It is allowed :O
+WHERE employee_number = 132; -- Not in the range of the view. However, it is allowed :O
 
 -- If you don't want people messing with the view and its underlying tables, add WITH READ ONLY to the end:
 CREATE OR REPLACE VIEW vw_by_department AS
@@ -98,7 +93,7 @@ CREATE OR REPLACE VIEW vw_by_department AS
 	-- he can change it at will
 	ORDER BY d.department, t.employee_number
 WITH READ ONLY
-;
+; -- Review: WITH READ ONLY (This should always be added, I think)
 
 -- If you want to people to modify info only in the range BETWEEN 120 AND 139:
 CREATE OR REPLACE VIEW vw_by_department AS (
@@ -177,16 +172,16 @@ AS (
 -- UNION and UNION ALL
 -- Combining rows together
 -- Same number of columns with similar/compatible data types
--- VARCHAR2(1) + VARCHAR2(5) OK
+-- VARCHAR2(1) + VARCHAR2(5) is OK
 
 -- Oracle SQL takes the name of the first field in the UNION ALL statement
 -- UNION ALL => allows duplicate results
 SELECT CAST('hi' AS CHAR(5)) || '.' as greeting
 FROM DUAL
-UNION ALL
+	UNION ALL
 SELECT CAST('hello there' AS CHAR(11)) as greeting_now
 FROM DUAL
-UNION ALL
+	UNION ALL
 SELECT CAST('bonjour' AS CHAR(11))
 FROM DUAL
 ;
@@ -194,15 +189,15 @@ FROM DUAL
 -- UNION does not allow duplicates:
 SELECT 1
 FROM DUAL
-UNION
+	UNION
 SELECT 1
 FROM DUAL
-UNION
+	UNION
 SELECT 2
 FROM DUAL
 ; -- 1,2
 
-
+-- BOOKMARK 20260926
 -- Casting from string -> date -> timestamp
 SELECT TO_DATE('2021-01-01', 'YYYY-MM-DD') as my_date
 FROM DUAL
