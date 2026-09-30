@@ -197,7 +197,6 @@ SELECT 2
 FROM DUAL
 ; -- 1,2
 
--- BOOKMARK 20260926
 -- Casting from string -> date -> timestamp
 SELECT TO_DATE('2021-01-01', 'YYYY-MM-DD') as my_date
 FROM DUAL
@@ -268,6 +267,7 @@ FROM tbl_employee
 ORDER BY &x -- Prompts a popup for the value for variable substitution
 ;
 
+-- However, ampersand subtitution works for defined variables as well:
 DEFINE VAR_AGE = 42;
 SELECT &VAR_AGE AS my_variable FROM DUAL;
 
@@ -276,7 +276,7 @@ UNDEFINE VAR_AGE;
 DEFINE sql_var = 'Hello, World';
 SELECT &sql_var AS my_var FROM DUAL;
 
--- 2 ampersand substitutions:
+-- 2 different use cases of ampersand substitutions:
 SELECT employee_number, employee_first_name, employee_middle_name, employee_last_name
 	,employee_government, date_of_birth, department
 FROM tbl_employee
@@ -304,6 +304,7 @@ DEFINE my_option = 'D';
 -- Dangerous?
 ACCEPT user_option PROMPT 'Choose an option (Uppercase from A-Z)';
 ---------------------------------------------------------------------------------------------------
+-- BOOKMARK 20260929
 -- NVL, NVL2 and COALESCE
 -- Null Value Logic
 -- NVL(column_name, '-')
