@@ -304,7 +304,6 @@ DEFINE my_option = 'D';
 -- Dangerous?
 ACCEPT user_option PROMPT 'Choose an option (Uppercase from A-Z)';
 ---------------------------------------------------------------------------------------------------
--- BOOKMARK 20260929
 -- NVL, NVL2 and COALESCE
 -- Null Value Logic
 -- NVL(column_name, '-')
@@ -380,9 +379,9 @@ CREATE TABLE tbl__transaction
 -- Source
 -- EMPLOYEE_NUMBER  | DATE  | VALUE
 -------------------------------------
---        2        | 3-Jan |  1000   -> Update this value. This will be the new value for id = 2
+--        2         | 3-Jan |  1000   -> Update this value. This will be the new value for id = 2
 --                                     old_value + new_value for the amount :O
---        3        | 3-Jan |  1000   -> This is inserted in the normal way
+--        3         | 3-Jan |  1000   -> This is inserted in the normal way
 -------------------------------------
 -- This last data cannot be added to the target table, since a PK constraint would be violated
 
@@ -400,7 +399,6 @@ CREATE TABLE tbl__transaction
 
 -- Target table: TBL_TRANSACTION
 -- Source table: TBL_TRANSACTION_NEW
-
 
 -- ON (condition) PARENTHESES are mandatory
 MERGE INTO tbl_transaction t
@@ -425,7 +423,7 @@ LEFT JOIN tbl_employee e
     ON t.employee_number = e.employee_number
 WHERE e.employee_number IS NULL
 ;
-
+-- Delete all of these employees in the new table:
 DELETE FROM tbl_transaction_new
 WHERE employee_number IN
 (
@@ -438,7 +436,7 @@ WHERE employee_number IN
 COMMIT;
 
 ---------------------------------------------------------------------------------------------------
--- ADDING A COMMENTS FIELD
+-- ADDING A COMMENTS FIELD (Like 'Pensiones', remember?)
 ALTER TABLE tbl_transaction ADD comments NVARCHAR2(50) NULL;
 
 MERGE INTO tbl_transaction t
@@ -466,7 +464,7 @@ CREATE TABLE ptbl_subcategory_new
 INSERT INTO ptbl_subcategory_new VALUES (24, 3, 'Tights (long)');
 INSERT INTO ptbl_subcategory_new VALUES (38, 4, 'Water bottles');
 COMMIT;
--- Create a MERGE statement that uses this new table to merge with ptbl_subcategory
+-- Create a MERGE statement that uses this new table to merge with ptbl_subcategory.
 -- Where the new product_subcategory_id matches an existing row, UPDATE the other fields in table ptbl_subcategory
 -- Where the new product_subcategory_id does not match, then INSERT this new data
 MERGE INTO ptbl_subcategory t
@@ -479,6 +477,7 @@ WHEN NOT MATCHED THEN
 	INSERT (product_subcategory_id, product_category_id, sub_category_name)
 	VALUES (s.product_subcategory_id, s.product_category_id, s.sub_category_name)
 ;
+-- Review: MERGE INTO t USING s ON () WHEN MATCHED THEN ... WHEN NOT MATCHED THEN ...
 ---------------------------------------------------------------------------------------------------
 -- OVER()
 -- Creating an attendance table
@@ -499,13 +498,14 @@ COMMIT;
 
 -- We want to sum all of the attendance days that a particular employee had per year
 SELECT employee_number
- 	   ,EXTRACT(YEAR FROM attendance_month) AS attendance_year
-	   ,SUM(number_attendance) AS total_attendance
+ 	,EXTRACT(YEAR FROM attendance_month) AS attendance_year
+	,SUM(number_attendance) AS total_attendance
 FROM tbl_attendance
 GROUP BY employee_number, EXTRACT(YEAR FROM attendance_month)
 ORDER BY employee_number, EXTRACT(YEAR FROM attendance_month)
 ; -- Entry examples for employee 123:
 -- EMPLOYEE_NUMBER |  ATTENDANCE_YEAR  | TOTAL_ATTENDANCE
+-----------------------------------------------------------
 --      123 	   |      2023		   |        174
 --      123 	   |      2024		   |        202
 
@@ -517,8 +517,8 @@ SELECT employee_number
 	,ROUND(number_attendance / (SUM(number_attendance) OVER()) * 100, 4) AS percentage_attendance
 FROM tbl_attendance
 ;
--- OVER() takes a particular range of rows and performs a calculation OVER this range.
--- At the moment, this calculation is performed OVER all the tbl_attendance, but we will refine this on the next lecture:
+-- OVER() takes a particular RANGE OF ROWS and performs a calculation OVER this range.
+-- At the moment, this calculation is performed OVER all the tbl_attendance, but we will refine this on the next lecture with:
 -- PARTITION BY and ORDER BY
 -- PARTITION BY refines the range that OVER() is working on
 -- OVER(PARTITION BY xxxx ORDER BY xxxxx ROWS xxxxx)
@@ -596,7 +596,7 @@ SELECT employee_number, attendance_month, number_attendance
 	,SUM(number_attendance) OVER (
 		PARTITION BY employee_number, EXTRACT(YEAR FROM attendance_month)
 		ORDER BY attendance_month
-		RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW
+		RANGE BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW -- Like distribution functions
 	) AS
 FROM tbl_attendance
 ORDER BY employee_number, attendance_month
@@ -624,7 +624,7 @@ FROM (SELECT * FROM tbl_attendance
 )
 ORDER BY employee_number, attendance_month
 ;
-
+-- BOOKMARK 20260930
 -- RANGE has only 3 possibilities:
 -- 1] RANGE UNBOUNDED PRECEDING AND CURRENT ROW = RANGE UNBOUNDED PRECEDING
 -- 2] RANGE CURRENT ROW AND UNBOUNDED FOLLOWING = RANGE UNBOUNDED FOLLOWING
