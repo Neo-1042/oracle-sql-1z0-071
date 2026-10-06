@@ -624,7 +624,6 @@ FROM (SELECT * FROM tbl_attendance
 )
 ORDER BY employee_number, attendance_month
 ;
--- BOOKMARK 20260930
 -- RANGE has only 3 possibilities:
 -- 1] RANGE UNBOUNDED PRECEDING AND CURRENT ROW = RANGE UNBOUNDED PRECEDING
 -- 2] RANGE CURRENT ROW AND UNBOUNDED FOLLOWING = RANGE UNBOUNDED FOLLOWING
@@ -637,7 +636,8 @@ ORDER BY employee_number, attendance_month
 -- Every other time, ROWS is recommended.
 
 -- *** Omitting RANGE/ROW
-SUM(number_attendance) OVER() -- what are the default values?
+SUM(number_attendance) OVER()
+-- Default values:
 -- PARTITION BY the entirety SELECT statement
 -- ORDER BY => You need an ORDER BY before using RANGE/ROWS
 -- RANGE BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING (slower)
@@ -655,7 +655,7 @@ FROM tbl_attendance
 
 -- Practice Activity 18
 -- Add an extra column which shows the total of the actual_cost to date
--- Then, add another extra column which shows the total month-to-date actual_cost
+-- Then, add a second extra column which shows the total month-to-date actual_cost
 -- (so that, when a new month starts, it resets) This is where you add the PARTITION BY clause
 SELECT Transaction_Date, Actual_Cost
 	,SUM(actual_cost) OVER (
@@ -675,14 +675,19 @@ ORDER BY Transaction_Date;
 -- from September 2014.
 
 -- On session 5 we will add 'WITH' to the OVER() clause :O
-
 ---------------------------------------------------------------------------------------------------
 -- *** ANALYTICAL FUNCTIONS *** --
--- ROW_NUMBER, RANK, DENSE_RANK, NTILE, FIRST_VALUE, LAST_VALUE, LAG and LEAD, CUME_DIST,
+-- ROW_NUMBER, RANK, DENSE_RANK, NTILE, FIRST_VALUE, LAST_VALUE, LAG, LEAD, CUME_DIST,
 -- PERCENT_RANK, PERCENTILE_CONT, PERCENTILE_DISC, and more.
 ---------------------------------------------------------------------------------------------------
-
 -- ROW_NUMBER (different from 'rownum'; the pseudocolumn), RANK and DENSE_RANK
+-- ROW_NUMER() is useful when used with PARTITION BY because it allows you to reset the count:
+-- emp 1
+-- emp 2
+-- emp 3
+-- emp 1
+-- emp 2
+-- emp 3
 SELECT
 	employee_number, attendance_month, number_attendance
 	,rownum -- This is a pseudocolumn. Has a couple of drawbacks
@@ -728,6 +733,30 @@ FROM (
 )
 ;
 
--- NTILE(x) almost identical to ROW_NUMBER(), RANK() and DENSE_RANK()
+-- NTILE(x) almost identical to ROW_NUMBER(), RANK() and DENSE_RANK(), except NTILE(x) gives you an argument option:
 -- NTILE(10) -> How many groups are you going to rank them in? In 10 groups or buckets
-SELECT
+-- Bigger buckets at the beginning.
+---------------------------------------------------------------------------------------------------
+-- FIRST_VALUE and LAST_VALUE
+-- These take first and the last value of the partition:
+SELECT employee_number, attendance_month, number_attendance,
+	FIRST_VALUE(number_attendance)
+		OVER(PARTITION BY employee_number ORDER BY attendance_month
+		ROWS BETWEEN 2 PRECEDING AND CURRENT ROW) as FirstMonth
+	,LAST_VALUE(number_attendance)
+		OVER(PARTITION BY employee_number ORDER BY attendance_month
+		ROWS BETWEEN UNBOUNDED PRECEDING AND UNBOUNDED FOLLOWING) as LastMonth
+FROM tbl_attendance
+;
+---------------------------------------------------------------------------------------------------
+-- LAG(column, 1, null_case)  -> Gives you the previous NUMBER_ATTENDANCE
+-- LEAD(column, 1, null_case) -> Gives you the next NUMBER_ATTENDANCE
+SELECT employee_number, attendance_month, number_attendance,
+	LAG(number_attendance)
+		OVER(PARTITION BY employee_number ORDER BY attendance_month) as MyLag
+	,LEAD(number_attendance)
+		OVER(PARTITION BY employee_number ORDER BY attendance_month) as MyLead
+FROM tbl_attendance
+;
+-- Reminder: PARTITION BY is optional, ORDER BY is compulsory.
+---------------------------------------------------------------------------------------------------
