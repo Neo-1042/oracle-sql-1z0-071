@@ -760,3 +760,20 @@ FROM tbl_attendance
 ;
 -- Reminder: PARTITION BY is optional, ORDER BY is compulsory.
 ---------------------------------------------------------------------------------------------------
+-- CUME_DIST() --> Divide over the size of the partition (variant of ROWNUMBER), e.g. 1/22, 2/22, ..., 22/22=1
+-- PERCENT_RANK() --> Similar to CUME_DIST(), but it starts from 0/21, 1/21, ... 21/21=1
+SELECT employee_number, attendance_month, number_attendance,
+	CUME_DIST()
+		OVER(PARTITION BY employee_number ORDER BY attendance_month) as MyCumDist
+	,LEAD(number_attendance)
+		OVER(PARTITION BY employee_number ORDER BY attendance_month) as MyLead
+FROM tbl_attendance
+;
+---------------------------------------------------------------------------------------------------
+-- PERCENTILE_CONT(0.5) WITHIN GROUP (ORDER BY ...) ---> Continuous Range
+-- PERCENTILE_DISC(0.5) WITHIN GROUP (ORDER BY ...) ---> Discrete Range
+-- Mean, mode and median.
+-- Median = percentile 50%
+---------------------------------------------------------------------------------------------------
+-- RANK(), DENSE_RANK, PERCENT_RANK() -> Aggregation Functions WITHIN GROUP(ORDER BY number_attendance)
+---------------------------------------------------------------------------------------------------
