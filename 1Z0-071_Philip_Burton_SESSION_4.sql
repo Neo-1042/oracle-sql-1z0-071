@@ -777,3 +777,36 @@ FROM tbl_attendance
 ---------------------------------------------------------------------------------------------------
 -- RANK(), DENSE_RANK, PERCENT_RANK() -> Aggregation Functions WITHIN GROUP(ORDER BY number_attendance)
 ---------------------------------------------------------------------------------------------------
+-- Practice Activity 19
+-- 1. Add an extra column which shows the change from the previous month, and from the next month.
+-- 2. Add an extra column which shows the change from the first month
+SELECT
+	TO_CHAR(Transaction_Date, 'YYYY-MM')
+	, SUM(Actual_Cost) AS total_actual_cost
+	, SUM(Actual_Cost) - LAG(SUM(Actual_Cost), 1) 
+		OVER (
+			ORDER BY TO_CHAR(Transaction_Date, 'YYYY-MM')
+		) AS change_previous_month -- Solution to 1
+	, SUM(Actual_Cost) - LEAD(SUM(Actual_Cost), 1) 
+		OVER (
+			ORDER BY TO_CHAR(Transaction_Date, 'YYYY-MM')
+		) AS change_next_month -- Solution to 2
+FROM tbl_transaction
+GROUP BY TO_CHAR(Transaction_Date, 'YYYY-MM')
+ORDER BY TO_CHAR(Transaction_Date, 'YYYY-MM')
+;
+---------------------------------------------------------------------------------------------------
+-- For the following code:
+-- 3. Add an extra column which divides the rows in 10 "buckets"
+-- 4. Then, add two extra columns, one based on the ROW_NUMBER and another based on the RANK based on the Transaction_Date
+SELECT
+	transaction_date
+	, actual_cost
+	, NTILE(10) OVER( ORDER BY transaction_date) AS buckets -- Solution to 3
+	, ROW_NUMBER() OVER( ORDER BY transaction_date) AS row_number_solution
+	, RANK() OVER( ORDER BY transaction_date) AS rank_solution -- Solution to 4
+FROM tbl_transaction
+;
+----------------------------------------------------------------------------------------------
+-- END OF SESSION 4
+----------------------------------------------------------------------------------------------
